@@ -7,17 +7,13 @@
   
   <!-- Load Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: { extend: {} }
-    }
-  </script>
   
-  <!-- Custom Styles -->
+  <!-- Custom Styles for Scrollbars -->
   <style>
     .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.8); border-radius: 10px; }
+    body { background-color: #020617; color: #f1f5f9; }
   </style>
 
   <!-- Import Maps for React and Lucide Icons -->
@@ -31,10 +27,10 @@
     }
   </script>
 </head>
-<body class="bg-slate-950 text-slate-100 h-screen w-full overflow-hidden">
+<body class="h-screen w-full overflow-hidden">
   <div id="root" class="h-full w-full"></div>
 
-  <!-- Load Babel to compile JSX in the browser -->
+  <!-- Load Babel to compile JSX in the browser automatically -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <!-- The Main React Application -->
@@ -230,10 +226,10 @@
       );
     };
 
-function App() {
-  const [activeTab, setActiveTab] = useState('telemetry'); 
-  const [selectedTarget, setSelectedTarget] = useState('Mun');
-  const [globalMargin, setGlobalMargin] = useState(10);
+    function App() {
+      const [activeTab, setActiveTab] = useState('telemetry'); 
+      const [selectedTarget, setSelectedTarget] = useState('Mun');
+      const [globalMargin, setGlobalMargin] = useState(10);
       const [expandedHardware, setExpandedHardware] = useState({});
       const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState(false);
       const [asteroidClass, setAsteroidClass] = useState('C (Medium, ~150t)');
@@ -247,14 +243,14 @@ function App() {
       const [infoModal, setInfoModal] = useState({ isOpen: false, title: '', content: '' });
 
       // --- Live Telemetry & Layout State ---
-      const [connectionMode, setConnectionMode] = useState('mock'); // 'mock' or 'live'
+      const [connectionMode, setConnectionMode] = useState('mock'); 
       const [telemachusAddress, setTelemachusAddress] = useState('ws://127.0.0.1:8080/datalink');
       const [krpcAddress, setKrpcAddress] = useState('ws://127.0.0.1:50000');
       const telemachusWsRef = useRef(null);
       const krpcWsRef = useRef(null);
       
       const [isLiveConnected, setIsLiveConnected] = useState(false);
-      const [telemachusStatus, setTelemachusStatus] = useState('disconnected'); // 'disconnected', 'connecting', 'connected', 'error'
+      const [telemachusStatus, setTelemachusStatus] = useState('disconnected'); 
       const [krpcStatus, setKrpcStatus] = useState('disconnected');
       
       const [connectionError, setConnectionError] = useState('');
@@ -277,7 +273,6 @@ function App() {
         resLF: { current: 0, max: 100 }, resEC: { current: 0, max: 100 }, resMono: { current: 0, max: 100 }
       });
 
-      // Telemetry Engine (Handles Mock data loops AND Telemachus polling)
       useEffect(() => {
         let interval;
         if (isLiveConnected) {
@@ -316,10 +311,8 @@ function App() {
               });
             }, 500);
           } else if (connectionMode === 'live') {
-            // Actively poll Telemachus for data every 500ms
             interval = setInterval(() => {
               if (telemachusWsRef.current && telemachusWsRef.current.readyState === WebSocket.OPEN) {
-                // Sending the standard Telemachus subscription array
                 telemachusWsRef.current.send(JSON.stringify({
                   "+": [
                     "v.altitude", "v.heightFromTerrain", "v.orbitalVelocity", "v.surfaceVelocity",
@@ -357,7 +350,6 @@ function App() {
               resLF: { current: 1440, max: 1440 }, resEC: { current: 200, max: 200 }, resMono: { current: 50, max: 50 }
             });
           } else {
-            // --- REAL DUAL-WEBSOCKET CONNECTION GATEWAY ---
             if (window.location.protocol === 'https:' && (telemachusAddress.startsWith('ws://') || krpcAddress.startsWith('ws://'))) {
               setConnectionError("CANVAS SECURITY BLOCK: Your browser is blocking this secure (https) site from talking to your unencrypted local game. To bypass the 'candado': Click the Settings/Lock icon next to your URL bar -> Site Settings -> 'Insecure Content' -> Change to ALLOW. Then reload the page.");
               return;
@@ -368,7 +360,6 @@ function App() {
             setKrpcStatus('connecting');
             setConnectionError('');
 
-            // 1. Connect Telemachus
             try {
               const tWs = new WebSocket(telemachusAddress);
               tWs.onopen = () => setTelemachusStatus('connected');
@@ -406,12 +397,10 @@ function App() {
               setTelemachusStatus('error');
             }
 
-            // 2. Connect kRPC
             try {
               const kWs = new WebSocket(krpcAddress);
               kWs.onopen = () => setKrpcStatus('connected');
               kWs.onmessage = (event) => {
-                // Future kRPC Protobuf decoding logic reserved here
                 console.log("kRPC payload intercepted:", event.data);
               };
               kWs.onerror = () => setKrpcStatus('error');
@@ -505,6 +494,7 @@ function App() {
       const handleRemoveStage = (idToRemove) => { setCustomStages(customStages.filter(stage => stage.id !== idToRemove)); const newExpanded = { ...expandedHardware }; delete newExpanded[idToRemove]; setExpandedHardware(newExpanded); };
       const handleUpdateStageName = (id, newName) => setCustomStages(customStages.map(stage => stage.id === id ? { ...stage, name: newName } : stage));
       const handleUpdateLocalMargin = (id, newMargin) => setCustomStages(customStages.map(stage => stage.id === id ? { ...stage, localMargin: parseInt(newMargin) || 0 } : stage));
+      
       const handleToggleManeuver = (stageId, maneuverId) => {
         setCustomStages(customStages.map(stage => {
           if (stage.id === stageId) {
@@ -514,6 +504,7 @@ function App() {
           return stage;
         }));
       };
+
       const toggleHardware = (stageId) => setExpandedHardware(prev => ({ ...prev, [stageId]: !prev[stageId] }));
       const handleSelectPreset = (preset) => { setNewManeuverName(preset.name); setNewManeuverDv(preset.dv.toString()); setNewManeuverDesc(preset.desc); };
       const saveCustomManeuver = () => {
@@ -768,7 +759,7 @@ function App() {
                 </button>
                 <button onClick={() => updateModule(mod.id, { collapsed: !mod.collapsed })} className={`p-1.5 rounded-md transition-colors ${mod.collapsed && summaryData?.wrapperClass ? 'text-white/50 hover:text-white hover:bg-white/10' : 'text-slate-500 hover:text-white hover:bg-slate-700'}`}>
                   {mod.collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                </button>
+            </button>
               </div>
             </div>
             {!mod.collapsed && (
@@ -1170,6 +1161,7 @@ function App() {
       );
     }
 
+    // Mount the Application
     const root = createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
