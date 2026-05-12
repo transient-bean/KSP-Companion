@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Rocket, Plus, Trash2, Map, Activity, Sliders, Cpu, Zap, Droplet, ChevronDown, ChevronUp, X, BookOpen, Layers, Orbit, Compass, Clock, HelpCircle, Wifi, WifiOff, Gauge, Database, Crosshair, Power, Sun, MoveDown, AlertTriangle, ArrowUpToLine, Flame, Pin, Settings as SettingsIcon, ArrowUp, ArrowDown, Eye, EyeOff, Maximize2, Minimize2, ThermometerSun, Wind, Server } from 'lucide-react';
+import ReactDOM from 'react-dom/client';
 
 const baseHardware = {
   launch: { battery: '100-200 (For launch duration)', monoprop: '0', generation: 'Alternator power' },
@@ -1127,7 +1128,6 @@ export default function App() {
     </div>
   );
 }
-import ReactDOM from 'react-dom/client';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
